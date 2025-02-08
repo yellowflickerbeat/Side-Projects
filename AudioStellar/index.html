@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AudioStellar</title>
+    <link rel="manifest" href="manifest.json">
     <link
     rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>"
@@ -216,11 +217,19 @@
         }
 
         function previousTrack() {
-            if (currentIndex > 0) loadVideo(currentIndex - 1);
+            if (currentIndex > 0) {
+                loadVideo(currentIndex - 1);
+                player.playVideo();  // Automatically play the previous track
+                isPlaying = true;    // Update play state
+            }
         }
 
         function nextTrack() {
-            if (currentIndex < playlist.length - 1) loadVideo(currentIndex + 1);
+            if (currentIndex < playlist.length - 1) {
+                loadVideo(currentIndex + 1);
+                player.playVideo();  // Automatically play the next track
+                isPlaying = true;    // Update play state
+            }
         }
 
         function randomTrack() {
@@ -236,6 +245,15 @@
             }
         }
     </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log("Service Worker Registered"))
+            .catch(error => console.log("Service Worker Registration Failed:", error));
+        }
+    </script>
+
     
 </body>
 </html>
