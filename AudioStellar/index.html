@@ -201,6 +201,8 @@
                 player.loadVideoById(playlist[index].id);
                 document.getElementById('currentSong').textContent = playlist[index].title;
                 displayPlaylist();
+                player.playVideo();
+                isPlaying = true; 
             }
         }
 
