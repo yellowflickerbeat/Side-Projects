@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>AudioStellar</title>
     <link rel="manifest" href="manifest.json">
     <link
@@ -15,8 +15,16 @@
 
     <style>
         body {
-            background: url('interstellar.jpg') no-repeat center center fixed;
-            background-size: cover;
+        background: url('interstellar.jpg') no-repeat center center fixed;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+
+        /* Prevent pixelation on high-DPI screens */
+        image-rendering: auto;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
         }
 
         .glass-container {
