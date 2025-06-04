@@ -1,1 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoFits - Fashion Carbon Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      color: #1b5e20;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
 
+    header {
+      background: linear-gradient(135deg, #1b5e20 0%, #43a047 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #1b5e20;
+      margin-bottom: 30px;
+      font-size: 1.8em;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 8px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #c8e6c9;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #43a047;
+      box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1);
+    }
+
+    .location-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .location-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    button {
+      margin-top: 30px;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+      border-radius: 10px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.2em;
+      border: 2px solid #81c784;
+    }
+
+    .fiber-info {
+      font-size: 0.9em;
+      color: #558b2f;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .distance-info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f1f8e9;
+      border-radius: 6px;
+      font-size: 0.9em;
+      color: #33691e;
+    }
+
+    .loading {
+      color: #43a047;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌿 EcoFits</div>
+  <p>Empowering Choices, One Outfit at a Time.</p>
+</header>
+
+<div class="container">
+  <h2>Clothing Carbon Footprint Calculator</h2>
+
+  <div class="form-group">
+    <label for="fiberType">Fiber Type</label>
+    <select id="fiberType" onchange="updateFiberEmissions()">
+      <option value="">Select fiber type</option>
+      <option value="cotton">Cotton (24.5 kg CO₂e/kg)</option>
+      <option value="polyester">Polyester (9.5 kg CO₂e/kg)</option>
+      <option value="wool">Wool (10.8 kg CO₂e/kg)</option>
+      <option value="viscose">Viscose/Rayon (11.9 kg CO₂e/kg)</option>
+      <option value="nylon">Nylon (7.6 kg CO₂e/kg)</option>
+      <option value="acrylic">Acrylic (8.5 kg CO₂e/kg)</option>
+      <option value="linen">Linen (0.9 kg CO₂e/kg)</option>
+      <option value="silk">Silk (23.1 kg CO₂e/kg)</option>
+      <option value="hemp">Hemp (0.7 kg CO₂e/kg)</option>
+      <option value="custom">Custom/Other</option>
+    </select>
+    <div class="fiber-info" id="fiberInfo"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="ef">Fibre Emissions (E<sub>f</sub>) – kg CO₂e</label>
+    <input type="number" id="ef" step="0.01" placeholder="Auto-filled based on fiber type">
+  </div>
+
+  <div class="form-group">
+    <label for="energyType">Manufacturing Energy Type</label>
+    <select id="energyType" onchange="updateManufacturingEmissions()">
+      <option value="">Select energy source</option>
+      <option value="coal">Coal Power (0.95 kg CO₂e/kWh)</option>
+      <option value="grid_china">Grid Mix - China (0.65 kg CO₂e/kWh)</option>
+      <option value="grid_india">Grid Mix - India (0.82 kg CO₂e/kWh)</option>
+      <option value="grid_eu">Grid Mix - EU (0.38 kg CO₂e/kWh)</option>
+      <option value="grid_us">Grid Mix - USA (0.45 kg CO₂e/kWh)</option>
+      <option value="natural_gas">Natural Gas (0.49 kg CO₂e/kWh)</option>
+      <option value="renewables">Renewables (0.05 kg CO₂e/kWh)</option>
+      <option value="nuclear">Nuclear (0.06 kg CO₂e/kWh)</option>
+      <option value="custom">Custom Energy Mix</option>
+    </select>
+    <div class="fiber-info" id="energyInfo"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="ep">Manufacturing Emissions (E<sub>p</sub>) – kg CO₂e</label>
+    <input type="number" id="ep" step="0.01" placeholder="Auto-calculated or enter custom value">
+  </div>
+
+  <div class="form-group">
+    <label for="treatmentType">Dyeing & Finishing Treatment</label>
+    <select id="treatmentType" onchange="updateTreatmentEmissions()">
+      <option value="">Select treatment type</option>
+      <option value="reactive_dye">Reactive Dye (2.8 kg CO₂e/kg fabric)</option>
+      <option value="pigment_dye">Pigment Dye (1.2 kg CO₂e/kg fabric)</option>
+      <option value="bleach">Bleach Treatment (0.8 kg CO₂e/kg fabric)</option>
+      <option value="digital_print">Digital Printing (0.5 kg CO₂e/kg fabric)</option>
+      <option value="no_finishing">No Finishing (0.1 kg CO₂e/kg fabric)</option>
+      <option value="natural_dye">Natural/Eco Dyes (0.3 kg CO₂e/kg fabric)</option>
+      <option value="custom">Custom Treatment</option>
+    </select>
+    <div class="fiber-info" id="treatmentInfo"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="ed">Dyeing & Finishing Emissions (E<sub>d</sub>) – kg CO₂e</label>
+    <input type="number" id="ed" step="0.01" placeholder="Auto-calculated or enter custom value">
+  </div>
+
+  <div class="form-group">
+    <label>Locations</label>
+    <div class="location-group">
+      <div>
+        <label for="manufacturingLocation">Manufacturing Location</label>
+        <select id="manufacturingLocation">
+          <option value="">Select location</option>
+          <option value="28.6139,77.2090">New Delhi, India</option>
+          <option value="19.0760,72.8777">Mumbai, India</option>
+          <option value="13.0827,80.2707">Chennai, India</option>
+          <option value="12.9716,77.5946">Bangalore, India</option>
+          <option value="22.5726,88.3639">Kolkata, India</option>
+          <option value="23.0225,72.5714">Ahmedabad, India</option>
+          <option value="31.2304,121.4737">Shanghai, China</option>
+          <option value="39.9042,116.4074">Beijing, China</option>
+          <option value="22.3193,114.1694">Hong Kong</option>
+          <option value="21.0285,105.8542">Hanoi, Vietnam</option>
+          <option value="10.8231,106.6297">Ho Chi Minh City, Vietnam</option>
+          <option value="13.7563,100.5018">Bangkok, Thailand</option>
+          <option value="23.8103,90.4125">Dhaka, Bangladesh</option>
+          <option value="6.9271,79.8612">Colombo, Sri Lanka</option>
+          <option value="custom">Custom Location</option>
+        </select>
+      </div>
+      <div>
+        <label for="sellingLocation">Selling Location</label>
+        <select id="sellingLocation">
+          <option value="">Select location</option>
+          <option value="40.7128,-74.0060">New York, USA</option>
+          <option value="34.0522,-118.2437">Los Angeles, USA</option>
+          <option value="41.8781,-87.6298">Chicago, USA</option>
+          <option value="51.5074,-0.1278">London, UK</option>
+          <option value="48.8566,2.3522">Paris, France</option>
+          <option value="52.5200,13.4050">Berlin, Germany</option>
+          <option value="35.6762,139.6503">Tokyo, Japan</option>
+          <option value="37.5665,126.9780">Seoul, South Korea</option>
+          <option value="1.3521,103.8198">Singapore</option>
+          <option value="-33.8688,151.2093">Sydney, Australia</option>
+          <option value="43.6532,-79.3832">Toronto, Canada</option>
+          <option value="19.4326,-99.1332">Mexico City, Mexico</option>
+          <option value="-23.5505,-46.6333">São Paulo, Brazil</option>
+          <option value="28.6139,77.2090">New Delhi, India</option>
+          <option value="19.0760,72.8777">Mumbai, India</option>
+          <option value="12.9716,77.5946">Bangalore, India</option>
+          <option value="custom">Custom Location</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="disposalMethod">End-of-Life Disposal Method</label>
+    <select id="disposalMethod" onchange="updateDisposalEmissions()">
+      <option value="">Select disposal method</option>
+      <option value="landfill">Landfill (0.15 kg CO₂e/kg garment)</option>
+      <option value="incineration">Incineration (0.85 kg CO₂e/kg garment)</option>
+      <option value="recycling">Mechanical Recycling (-0.2 kg CO₂e/kg garment)</option>
+      <option value="chemical_recycling">Chemical Recycling (-0.4 kg CO₂e/kg garment)</option>
+      <option value="brand_takeback">Brand Take-back Program (-0.3 kg CO₂e/kg garment)</option>
+      <option value="donation">Donation/Reuse (-0.5 kg CO₂e/kg garment)</option>
+      <option value="composting">Composting (Natural fibers) (-0.1 kg CO₂e/kg garment)</option>
+      <option value="custom">Custom Disposal</option>
+    </select>
+    <div class="fiber-info" id="disposalInfo"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="ee">End-of-Life Emissions (E<sub>e</sub>) – kg CO₂e</label>
+    <input type="number" id="ee" step="0.01" placeholder="Auto-calculated or enter custom value">
+  </div>
+
+  <button onclick="calculateCCI()">Calculate Carbon Footprint</button>
+
+  <div id="result" class="result" style="display:none;"></div>
+</div>
+
+<script>
+  const fiberEmissions = {
+    cotton: 24.5,
+    polyester: 9.5,
+    wool: 10.8,
+    viscose: 11.9,
+    nylon: 7.6,
+    acrylic: 8.5,
+    linen: 0.9,
+    silk: 23.1,
+    hemp: 0.7
+  };
+
+  const energyEmissions = {
+    coal: 0.95,
+    grid_china: 0.65,
+    grid_india: 0.82,
+    grid_eu: 0.38,
+    grid_us: 0.45,
+    natural_gas: 0.49,
+    renewables: 0.05,
+    nuclear: 0.06
+  };
+
+  const treatmentEmissions = {
+    reactive_dye: 2.8,
+    pigment_dye: 1.2,
+    bleach: 0.8,
+    digital_print: 0.5,
+    no_finishing: 0.1,
+    natural_dye: 0.3
+  };
+
+  const disposalEmissions = {
+    landfill: 0.15,
+    incineration: 0.85,
+    recycling: -0.2,
+    chemical_recycling: -0.4,
+    brand_takeback: -0.3,
+    donation: -0.5,
+    composting: -0.1
+  };
+
+  function updateFiberEmissions() {
+    const fiberType = document.getElementById('fiberType').value;
+    const efInput = document.getElementById('ef');
+    const fiberInfo = document.getElementById('fiberInfo');
+    
+    if (fiberType && fiberType !== 'custom') {
+      efInput.value = fiberEmissions[fiberType];
+      fiberInfo.textContent = `Typical fiber emission factor for ${fiberType}`;
+    } else if (fiberType === 'custom') {
+      efInput.value = '';
+      fiberInfo.textContent = 'Enter custom fiber emission value';
+    } else {
+      efInput.value = '';
+      fiberInfo.textContent = '';
+    }
+  }
+
+  function updateManufacturingEmissions() {
+    const energyType = document.getElementById('energyType').value;
+    const epInput = document.getElementById('ep');
+    const energyInfo = document.getElementById('energyInfo');
+    
+    if (energyType && energyType !== 'custom') {
+      // Assume 3 kWh energy consumption per kg of fabric for manufacturing
+      const energyConsumption = 3;
+      const emissions = energyEmissions[energyType] * energyConsumption;
+      epInput.value = emissions.toFixed(2);
+      energyInfo.textContent = `Based on ${energyConsumption} kWh/kg fabric consumption`;
+    } else if (energyType === 'custom') {
+      epInput.value = '';
+      energyInfo.textContent = 'Enter custom manufacturing emission value';
+    } else {
+      epInput.value = '';
+      energyInfo.textContent = '';
+    }
+  }
+
+  function updateTreatmentEmissions() {
+    const treatmentType = document.getElementById('treatmentType').value;
+    const edInput = document.getElementById('ed');
+    const treatmentInfo = document.getElementById('treatmentInfo');
+    
+    if (treatmentType && treatmentType !== 'custom') {
+      edInput.value = treatmentEmissions[treatmentType];
+      treatmentInfo.textContent = `Standard emission factor for ${treatmentType.replace('_', ' ')}`;
+    } else if (treatmentType === 'custom') {
+      edInput.value = '';
+      treatmentInfo.textContent = 'Enter custom treatment emission value';
+    } else {
+      edInput.value = '';
+      treatmentInfo.textContent = '';
+    }
+  }
+
+  function updateDisposalEmissions() {
+    const disposalMethod = document.getElementById('disposalMethod').value;
+    const eeInput = document.getElementById('ee');
+    const disposalInfo = document.getElementById('disposalInfo');
+    
+    if (disposalMethod && disposalMethod !== 'custom') {
+      eeInput.value = disposalEmissions[disposalMethod];
+      const impact = disposalEmissions[disposalMethod] < 0 ? 'reduces' : 'adds to';
+      disposalInfo.textContent = `This disposal method ${impact} the carbon footprint`;
+    } else if (disposalMethod === 'custom') {
+      eeInput.value = '';
+      disposalInfo.textContent = 'Enter custom disposal emission value';
+    } else {
+      eeInput.value = '';
+      disposalInfo.textContent = '';
+    }
+  }
+
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function parseLocation(locationString) {
+    const coords = locationString.split(',');
+    return {
+      lat: parseFloat(coords[0]),
+      lng: parseFloat(coords[1])
+    };
+  }
+
+  function calculateCCI() {
+    const ef = parseFloat(document.getElementById("ef").value) || 0;
+    const ep = parseFloat(document.getElementById("ep").value) || 0;
+    const ed = parseFloat(document.getElementById("ed").value) || 0;
+    const ee = parseFloat(document.getElementById("ee").value) || 0;
+    
+    const manufacturingLocation = document.getElementById("manufacturingLocation").value;
+    const sellingLocation = document.getElementById("sellingLocation").value;
+    
+    let distance = 0;
+    let et = 0;
+    let distanceInfo = '';
+    
+    if (manufacturingLocation && sellingLocation && 
+        manufacturingLocation !== 'custom' && sellingLocation !== 'custom') {
+      
+      const mfgCoords = parseLocation(manufacturingLocation);
+      const sellCoords = parseLocation(sellingLocation);
+      
+      distance = calculateDistance(mfgCoords.lat, mfgCoords.lng, sellCoords.lat, sellCoords.lng);
+      
+      // Transport emission factor: 0.00015 kg CO₂e per km (average for various transport modes)
+      const EF_t = 0.00015;
+      et = distance * EF_t;
+      
+      distanceInfo = `
+        <div class="distance-info">
+          <strong>Transport Details:</strong><br>
+          Distance: ${distance.toFixed(0)} km<br>
+          Transport Emissions: ${et.toFixed(3)} kg CO₂e
+        </div>
+      `;
+    } else if (manufacturingLocation === 'custom' || sellingLocation === 'custom') {
+      distanceInfo = '<div class="distance-info">Custom locations selected - transport emissions set to 0</div>';
+    } else {
+      distanceInfo = '<div class="distance-info">Please select both manufacturing and selling locations</div>';
+    }
+
+    const cci = (ef + ep + ed + et + ee).toFixed(3);
+
+    const resultBox = document.getElementById("result");
+    resultBox.style.display = "block";
+    resultBox.innerHTML = `
+      <div style="font-size: 1.4em; margin-bottom: 15px;">
+        🌿 <strong>Carbon Footprint: ${cci} kg CO₂e</strong>
+      </div>
+      <div style="font-size: 1em; color: #2e7d32;">
+        Breakdown:<br>
+        • Fiber: ${ef} kg CO₂e<br>
+        • Manufacturing: ${ep} kg CO₂e<br>
+        • Dyeing/Finishing: ${ed} kg CO₂e<br>
+        • Transport: ${et.toFixed(3)} kg CO₂e<br>
+        • End-of-life: ${ee} kg CO₂e ${ee < 0 ? '(Carbon savings!)' : ''}
+      </div>
+      ${distanceInfo}
+    `;
+  }
+</script>
+
+</body>
+</html>
