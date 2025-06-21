@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoFits - Clothing Tracker System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      color: #1b5e20;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1b5e20 0%, #43a047 100%);
+      color: white;
+      padding: 4px 0 4px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      min-height: 38px;
+    }
+
+    .logo {
+      font-size: 1.05em;
+      font-weight: bold;
+      margin-bottom: 0px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.13);
+      letter-spacing: 1px;
+    }
+
+    header p {
+      font-size: 0.82em;
+      margin-bottom: 0;
+      margin-top: 1px;
+      letter-spacing: 0.5px;
+    }
+
+    nav {
+      background: rgba(255,255,255,0.08);
+      padding: 6px 0;
+      margin-top: 10px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 56px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.5em;
+      box-shadow: 0 2px 8px rgba(67,160,71,0.13);
+      transition: all 0.25s cubic-bezier(.4,2,.6,1);
+      position: relative;
+      outline: none;
+    }
+    .nav-btn svg {
+      width: 36px;
+      height: 36px;
+      display: block;
+    }
+    .nav-btn span {
+      display: none;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background: linear-gradient(135deg, #388e3c 0%, #81c784 100%);
+      transform: translateY(-2px) scale(1.08);
+      box-shadow: 0 4px 16px rgba(67,160,71,0.18);
+    }
+    .nav-btn-label {
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: #388e3c;
+      font-size: 1em;
+      padding: 4px 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(67,160,71,0.10);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .nav-btn:hover .nav-btn-label {
+      opacity: 1;
+    }
+    .nav-btn.active .nav-btn-label {
+      opacity: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1b5e20;
+      margin-bottom: 30px;
+      font-size: 1.8em;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 8px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #c8e6c9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #43a047;
+      box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+    }
+
+    .qr-container {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background: #f1f8e9;
+      border-radius: 10px;
+      border: 2px dashed #81c784;
+    }
+
+    .qr-code {
+      margin: 20px 0;
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+      border-radius: 10px;
+      border: 2px solid #81c784;
+    }
+
+    .item-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .item-id {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #1b5e20;
+    }
+
+    .status-badge {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+
+    .status-manufactured {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-shipped {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .status-delivered {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      
+      nav {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    .info-text {
+      font-size: 0.9em;
+      color: #558b2f;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .carbon-summary {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .scanner-area {
+      border: 2px dashed #43a047;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      background: #f1f8e9;
+      margin: 20px 0;
+    }
+
+    .scanner-active {
+      border-color: #2e7d32;
+      background: #e8f5e9;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌿 EcoFits Tracker</div>
+  <p>Track clothing items through the supply chain</p>
+  
+  <nav>
+    <button class="nav-btn active" onclick="showSection('generate', event)">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;"><rect x="3" y="3" width="7" height="7" rx="2" fill="#fff"/><rect x="14" y="3" width="7" height="7" rx="2" fill="#fff"/><rect x="14" y="14" width="7" height="7" rx="2" fill="#fff"/><rect x="3" y="14" width="7" height="7" rx="2" fill="#fff"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5" fill="#43a047"/></svg>
+      <span>Generate QR</span>
+      <div class="nav-btn-label">Generate QR</div>
+    </button>
+    <button class="nav-btn" onclick="showSection('scan', event)">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#fff" stroke-width="2"/><path d="M8 12h8" stroke="#43a047" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Scan QR</span>
+      <div class="nav-btn-label">Scan QR</div>
+    </button>
+    <button class="nav-btn" onclick="showSection('admin', event)">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px;"><circle cx="12" cy="8" r="4" fill="#fff"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="#43a047" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Admin Dashboard</span>
+      <div class="nav-btn-label">Admin Dashboard</div>
+    </button>
+  </nav>
+</header>
+
+<div class="container">
+  <!-- Generate QR Section -->
+  <div id="generate" class="section active">
+    <h2>Generate QR Code for New Item</h2>
+    
+    <div class="form-group">
+      <label for="itemId">Item ID</label>
+      <input type="text" id="itemId" placeholder="Auto-generated" readonly>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="fiberType">Fiber Type</label>
+        <select id="fiberType">
+          <option value="">Select fiber type</option>
+          <option value="cotton">Cotton</option>
+          <option value="polyester">Polyester</option>
+          <option value="wool">Wool</option>
+          <option value="viscose">Viscose/Rayon</option>
+          <option value="nylon">Nylon</option>
+          <option value="acrylic">Acrylic</option>
+          <option value="linen">Linen</option>
+          <option value="silk">Silk</option>
+          <option value="hemp">Hemp</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="garmentType">Garment Type</label>
+        <select id="garmentType">
+          <option value="">Select garment</option>
+          <option value="t-shirt">T-Shirt</option>
+          <option value="jeans">Jeans</option>
+          <option value="dress">Dress</option>
+          <option value="jacket">Jacket</option>
+          <option value="sweater">Sweater</option>
+          <option value="shirt">Shirt</option>
+          <option value="pants">Pants</option>
+          <option value="skirt">Skirt</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="size">Size</label>
+        <select id="size">
+          <option value="">Select size</option>
+          <option value="XS">XS</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="color">Color</label>
+        <input type="text" id="color" placeholder="e.g., Blue, Red, Black">
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="grid-column: span 2; text-align:center;">
+          <label for="colorHex">Color (Hex)</label>
+          <input type="color" id="colorHex" value="#000000" style="width:90px;height:54px;border-radius:18px;border:2px solid #43a047;box-shadow:0 2px 8px #c8e6c9;cursor:pointer;display:inline-block;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="manufacturingLocation">Manufacturing Location</label>
+      <select id="manufacturingLocation">
+        <option value="">Select location</option>
+        <option value="28.6139,77.2090">New Delhi, India</option>
+        <option value="19.0760,72.8777">Mumbai, India</option>
+        <option value="13.0827,80.2707">Chennai, India</option>
+        <option value="12.9716,77.5946">Bangalore, India</option>
+        <option value="22.5726,88.3639">Kolkata, India</option>
+        <option value="23.0225,72.5714">Ahmedabad, India</option>
+        <option value="31.2304,121.4737">Shanghai, China</option>
+        <option value="39.9042,116.4074">Beijing, China</option>
+        <option value="22.3193,114.1694">Hong Kong</option>
+        <option value="21.0285,105.8542">Hanoi, Vietnam</option>
+        <option value="10.8231,106.6297">Ho Chi Minh City, Vietnam</option>
+        <option value="23.8103,90.4125">Dhaka, Bangladesh</option>
+      </select>
+    </div>
+    
+    <button onclick="generateQR()">Generate QR Code</button>
+    
+    <div id="qrResult" class="qr-container" style="display:none;">
+      <h3>QR Code Generated Successfully!</h3>
+      <div id="qrCode" class="qr-code"></div>
+      <p><strong>Item ID:</strong> <span id="generatedId"></span></p>
+      <button onclick="downloadQR()">Download QR Code</button>
+    </div>
+  </div>
+
+  <!-- Scan QR Section -->
+  <div id="scan" class="section">
+    <h2>Scan QR Code</h2>
+    
+    <div class="form-group">
+      <label for="scanLocation">Scan Location Type</label>
+      <select id="scanLocation">
+        <option value="">Select location type</option>
+        <option value="manufacturing">Manufacturing Center (Dispatch)</option>
+        <option value="retail">Retail Store (Arrival)</option>
+        <option value="consumer">Consumer (Purchase)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="storeLocation">Store/Location</label>
+      <select id="storeLocation">
+        <option value="">Select location</option>
+        <option value="40.7128,-74.0060">New York, USA</option>
+        <option value="34.0522,-118.2437">Los Angeles, USA</option>
+        <option value="41.8781,-87.6298">Chicago, USA</option>
+        <option value="51.5074,-0.1278">London, UK</option>
+        <option value="48.8566,2.3522">Paris, France</option>
+        <option value="52.5200,13.4050">Berlin, Germany</option>
+        <option value="35.6762,139.6503">Tokyo, Japan</option>
+        <option value="37.5665,126.9780">Seoul, South Korea</option>
+        <option value="1.3521,103.8198">Singapore</option>
+        <option value="-33.8688,151.2093">Sydney, Australia</option>
+        <option value="19.0760,72.8777">Mumbai, India</option>
+        <option value="12.9716,77.5946">Bangalore, India</option>
+      </select>
+    </div>
+    
+    <div class="scanner-area" id="scannerArea">
+      <h3>📱 QR Scanner</h3>
+      <p>Scan QR code here or enter Item ID manually</p>
+      <input type="text" id="manualId" placeholder="Enter Item ID manually" style="margin-top: 15px;">
+    </div>
+    
+    <button onclick="processScanned()">Process Scan</button>
+    
+    <div id="scanResult" class="result" style="display:none;"></div>
+  </div>
+
+  <!-- Admin Dashboard Section -->
+  <div id="admin" class="section">
+    <h2>Admin Dashboard</h2>
+    
+    <div class="form-group">
+      <label for="searchId">Search by Item ID</label>
+      <input type="text" id="searchId" placeholder="Enter Item ID">
+      <button onclick="searchItem()" style="margin-top: 10px;">Search Item</button>
+    </div>
+    
+    <div id="itemDetails" style="display:none;">
+      <h3>Item Details</h3>
+      <div id="itemInfo"></div>
+    </div>
+    
+    <div id="allItems">
+      <h3>All Tracked Items</h3>
+      <div id="itemsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Move QRCode script above main script for proper loading -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+<script>
+  // In-memory storage for items
+  let items = {};
+  let currentSection = 'generate';
+
+  // Initialize with some sample data
+  items['ECO001'] = {
+    id: 'ECO001',
+    fiberType: 'cotton',
+    garmentType: 't-shirt',
+    size: 'M',
+    colorHex: '#000000',
+    manufacturingLocation: '19.0760,72.8777',
+    manufacturingLocationName: 'Mumbai, India',
+    status: 'delivered',
+    scans: [
+      { type: 'manufacturing', location: '19.0760,72.8777', locationName: 'Mumbai, India', timestamp: '2024-01-15T10:30:00Z' },
+      { type: 'retail', location: '40.7128,-74.0060', locationName: 'New York, USA', timestamp: '2024-01-25T14:20:00Z' },
+      { type: 'consumer', location: '40.7128,-74.0060', locationName: 'New York, USA', timestamp: '2024-02-01T16:45:00Z' }
+    ],
+    carbonFootprint: 12.5,
+    distance: 13842
+  };
+
+  function showSection(sectionName, event) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.remove('active');
+    });
+    
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(sectionName)?.classList.add('active');
+    if (event && event.target.closest('.nav-btn')) {
+      event.target.closest('.nav-btn').classList.add('active');
+    }
+    currentSection = sectionName;
+    
+    if (sectionName === 'admin') {
+      loadAllItems();
+    }
+  }
+
+  function generateUniqueId() {
+    const prefix = 'ECO';
+    const number = Math.floor(Math.random() * 9000) + 1000;
+    return prefix + number;
+  }
+
+  function generateQR() {
+    const itemId = generateUniqueId();
+    const fiberType = document.getElementById('fiberType').value;
+    const garmentType = document.getElementById('garmentType').value;
+    const size = document.getElementById('size').value;
+    const colorHex = document.getElementById('colorHex').value;
+    const manufacturingLocation = document.getElementById('manufacturingLocation').value;
+    if (!fiberType || !garmentType || !size || !colorHex || !manufacturingLocation) {
+      alert('Please fill all fields');
+      return;
+    }
+    // Store item data
+    const locationName = document.getElementById('manufacturingLocation').selectedOptions[0].text;
+    items[itemId] = {
+      id: itemId,
+      fiberType,
+      garmentType,
+      size,
+      colorHex,
+      manufacturingLocation,
+      manufacturingLocationName: locationName,
+      status: 'manufactured',
+      scans: [],
+      carbonFootprint: 0,
+      distance: 0
+    };
+    // Display item ID
+    document.getElementById('itemId').value = itemId;
+    document.getElementById('generatedId').textContent = itemId;
+    // Generate QR code (use correct API)
+    const qrData = JSON.stringify({
+      id: itemId,
+      type: 'EcoFits_Item'
+    });
+    document.getElementById('qrCode').innerHTML = '';
+    setTimeout(function() {
+      if (window.QRCode) {
+        new QRCode(document.getElementById('qrCode'), {
+          text: qrData,
+          width: 200,
+          height: 200,
+          colorDark: '#1b5e20',
+          colorLight: '#fff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } else {
+        document.getElementById('qrCode').innerHTML = '<span style="color:red">QR library not loaded</span>';
+      }
+    }, 100);
+    document.getElementById('qrResult').style.display = 'block';
+    // Automatically show scanner section after QR generation
+    setTimeout(function() {
+      showSection('scan', {target: document.querySelector('.nav-btn:nth-child(2)')});
+    }, 500);
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector('#qrCode canvas');
+    if (canvas) {
+      const link = document.createElement('a');
+      link.download = `EcoFits_${document.getElementById('generatedId').textContent}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  }
+
+  function processScanned() {
+    const scanType = document.getElementById('scanLocation').value;
+    const storeLocation = document.getElementById('storeLocation').value;
+    const itemId = document.getElementById('manualId').value;
+    
+    if (!scanType || !storeLocation || !itemId) {
+      alert('Please fill all fields');
+      return;
+    }
+    
+    if (!items[itemId]) {
+      alert('Item not found');
+      return;
+    }
+    
+    const locationName = document.getElementById('storeLocation').selectedOptions[0].text;
+    const scan = {
+      type: scanType,
+      location: storeLocation,
+      locationName: locationName,
+      timestamp: new Date().toISOString()
+    };
+    
+    items[itemId].scans.push(scan);
+    
+    // Update status
+    if (scanType === 'manufacturing') {
+      items[itemId].status = 'shipped';
+    } else if (scanType === 'retail') {
+      items[itemId].status = 'delivered';
+      // Calculate distance and carbon footprint
+      calculateMetrics(itemId);
+    } else if (scanType === 'consumer') {
+      items[itemId].status = 'sold';
+    }
+    
+    document.getElementById('scanResult').style.display = 'block';
+    document.getElementById('scanResult').innerHTML = `
+      <h3>✅ Scan Processed Successfully</h3>
+      <p><strong>Item ID:</strong> ${itemId}</p>
+      <p><strong>Status:</strong> ${items[itemId].status}</p>
+      <p><strong>Location:</strong> ${locationName}</p>
+      <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+    `;
+    
+    // Clear form
+    document.getElementById('manualId').value = '';
+  }
+
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function calculateMetrics(itemId) {
+    const item = items[itemId];
+    const manufacturingScan = item.scans.find(scan => scan.type === 'manufacturing');
+    const retailScan = item.scans.find(scan => scan.type === 'retail');
+    
+    if (manufacturingScan && retailScan) {
+      const [mfgLat, mfgLng] = manufacturingScan.location.split(',').map(Number);
+      const [retailLat, retailLng] = retailScan.location.split(',').map(Number);
+      
+      const distance = calculateDistance(mfgLat, mfgLng, retailLat, retailLng);
+      item.distance = Math.round(distance);
+      
+      // Simple carbon footprint calculation
+      const fiberEmissions = {
+        cotton: 24.5, polyester: 9.5, wool: 10.8, viscose: 11.9,
+        nylon: 7.6, acrylic: 8.5, linen: 0.9, silk: 23.1, hemp: 0.7
+      };
+      
+      const transportEmissions = distance * 0.00015; // kg CO2e per km
+      const fiberCO2 = fiberEmissions[item.fiberType] || 10;
+      const totalCO2 = fiberCO2 + 3 + 1.5 + transportEmissions + 0.15; // simplified calculation
+      
+      item.carbonFootprint = Math.round(totalCO2 * 100) / 100;
+    }
+  }
+
+  function searchItem() {
+    const searchId = document.getElementById('searchId').value;
+    if (!searchId) {
+      alert('Please enter an Item ID');
+      return;
+    }
+    
+    if (!items[searchId]) {
+      alert('Item not found');
+      return;
+    }
+    
+    displayItemDetails(searchId);
+  }
+
+  function displayItemDetails(itemId) {
+    const item = items[itemId];
+    const detailsDiv = document.getElementById('itemDetails');
+    const infoDiv = document.getElementById('itemInfo');
+    let scanHistory = '';
+    item.scans.forEach(scan => {
+      scanHistory += `
+        <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+          <strong>${scan.type.charAt(0).toUpperCase() + scan.type.slice(1)}:</strong> ${scan.locationName}<br>
+          <small>${new Date(scan.timestamp).toLocaleString()}</small>
+        </div>
+      `;
+    });
+    infoDiv.innerHTML = `
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-id">${item.id}</div>
+          <div class="status-badge status-${item.status}">${item.status.toUpperCase()}</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <strong>Product Details:</strong><br>
+            Type: ${item.garmentType}<br>
+            Fiber: ${item.fiberType}<br>
+            Size: ${item.size}<br>
+            Color: <span style='display:inline-block;width:28px;height:28px;background:${item.colorHex};border-radius:8px;border:2px solid #43a047;vertical-align:middle;margin-left:6px;'></span> ${item.colorHex}
+          </div>
+          <div>
+            <strong>Manufacturing:</strong><br>
+            Location: ${item.manufacturingLocationName}<br>
+            Distance Travelled: ${item.distance} km<br>
+            Carbon Footprint: ${item.carbonFootprint} kg CO₂e
+          </div>
+        </div>
+        <div class="carbon-summary">
+          <strong>🌍 Environmental Impact:</strong><br>
+          Total Carbon Footprint: <strong>${item.carbonFootprint} kg CO₂e</strong><br>
+          Distance Travelled: <strong>${item.distance} km</strong>
+        </div>
+        <div style="margin-top: 20px;">
+          <strong>📍 Scan History:</strong>
+          ${scanHistory || '<p>No scans recorded yet</p>'}
+        </div>
+      </div>
+    `;
+    detailsDiv.style.display = 'block';
+  }
+
+  function loadAllItems() {
+    const itemsList = document.getElementById('itemsList');
+    let html = '';
+    
+    Object.values(items).forEach(item => {
+      html += `
+        <div class="item-card">
+          <div class="item-header">
+            <div class="item-id">${item.id}</div>
+            <div class="status-badge status-${item.status}">${item.status.toUpperCase()}</div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <strong>${item.garmentType}</strong> (${item.fiberType})<br>
+              Size: ${item.size} | Color: ${item.colorHex}
+            </div>
+            <div>
+              Distance: ${item.distance} km<br>
+              Carbon: ${item.carbonFootprint} kg CO₂e
+            </div>
+          </div>
+          <button onclick="displayItemDetails('${item.id}')" style="width: auto; padding: 8px 16px; margin-top: 10px;">View Details</button>
+        </div>
+      `;
+    });
+    
+    itemsList.innerHTML = html || '<p>No items found</p>';
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAllItems();
+  });
+</script>
+
+</body>
+</html>
