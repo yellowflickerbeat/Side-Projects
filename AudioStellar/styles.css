@@ -1,0 +1,93 @@
+body {
+        background: url('interstellar.jpg') no-repeat center center fixed;
+        background-size: cover;
+
+        /* Prevent pixelation on high-DPI screens */
+        image-rendering: auto;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+    }
+
+
+    .glass-container {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+
+        .custom-btn {
+            transition: all 0.3s ease;
+            background-color: transparent;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+        }
+
+        .custom-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(141, 60, 165, 0.5);
+        }
+
+        .custom-btn svg {
+            transition: all 0.3s ease;
+        }
+
+        .custom-btn:hover svg {
+            fill: #ffffff;
+        }
+
+        #playPauseBtn {
+            width: 72px;
+            height: 72px;
+        }
+
+        .load-playlist-btn {
+        transition: all 0.3s ease;
+        background-color: #69247C;
+        color: white;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        border: 2px solid transparent;
+        backdrop-filter: blur(5px);
+        }
+
+        .load-playlist-btn:hover {
+            background-color: #8D3CA5;
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(105, 36, 124, 0.3);
+        }
+
+        .load-playlist-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .glass-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .custom-btn {
+                width: 48px;
+                height: 48px;
+            }
+            
+            #playPauseBtn {
+                width: 64px;
+                height: 64px;
+            }
+        }
