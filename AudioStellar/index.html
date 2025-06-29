@@ -14,21 +14,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 
-  
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
     <div class="max-w-2xl w-full p-6 glass-container text-violet">
         <h1 class="text-3xl font-bold text-center mb-6 text-purple">AudioStellar</h1>
         <p class="text-lg text-[#483248] text-center mb-4"><b>Enjoy ad-free YouTube audio with minimal data usage.</b></p>
 
-        <!-- User interaction prompt for mobile -->
         <div id="mobilePrompt" class="hidden mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-yellow-800 text-sm">
             <p>📱 <strong>Mobile Users:</strong> Tap anywhere to enable background playback, then load your playlist.</p>
         </div>
 
         <div class="mb-6">
             <input type="text" id="playlistUrl" placeholder="Enter YouTube playlist URL" 
-                   class="w-full p-3 rounded-lg border-none text-[#4635B1]">
+                    class="w-full p-3 rounded-lg border-none text-[#4635B1]">
             <br><br><button onclick="loadPlaylist()" class="load-playlist-btn">
                 Load Playlist
             </button>
@@ -177,7 +175,8 @@
 
                 playlist = data.items.map(item => ({
                     id: item.snippet.resourceId.videoId,
-                    title: item.snippet.title
+                    title: item.snippet.title,
+                    thumbnail: item.snippet.thumbnails.default.url // Add thumbnail for Media Session
                 }));
 
                 // Save last playlist URL
@@ -222,6 +221,7 @@
                 document.getElementById('currentSong').textContent = playlist[index].title;
                 document.title = `♪ ${playlist[index].title}`;
                 displayPlaylist();
+                updateMediaSession(); // Update Media Session metadata
             }
         }
 
@@ -244,6 +244,7 @@
                 isPlaying = true;
                 document.title = `♪ ${playlist[currentIndex]?.title || 'AudioStellar'}`;
             }
+            updateMediaSession(); // Update Media Session playback state
         }
 
         function previousTrack() {
@@ -287,19 +288,71 @@
             } else if (event.data === YT.PlayerState.PLAYING) {
                 isPlaying = true;
                 document.getElementById('playPauseBtn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#8C1AF6"><path d="M560-200v-560h160v560H560Zm-320 0v-560h160v560H240Z"/></svg>';
+                updateMediaSession(); // Update Media Session playback state
             } else if (event.data === YT.PlayerState.PAUSED) {
                 isPlaying = false;
                 document.getElementById('playPauseBtn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#8C1AF6"><path d="M320-203v-560l440 280-440 280Z"/></svg>';
+                updateMediaSession(); // Update Media Session playback state
             }
         }
 
+        // --- Media Session API Implementation ---
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', () => {
+                    if (!isPlaying) togglePlay();
+                });
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    if (isPlaying) togglePlay();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack());
+                navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack());
+                // Add seek backward/forward if you want
+                // navigator.mediaSession.setActionHandler('seekbackward', (details) => {});
+                // navigator.mediaSession.setActionHandler('seekforward', (details) => {});
+
+                // Set default metadata (will be updated when a song loads)
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'AudioStellar',
+                    artist: 'Web App',
+                    album: 'YouTube Playlist',
+                    artwork: [
+                        { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+                        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+                    ]
+                });
+            }
+        }
+
+        function updateMediaSession() {
+            if ('mediaSession' in navigator && playlist.length > 0) {
+                const current = playlist[currentIndex];
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: current.title,
+                    artist: 'YouTube', // You might extract the channel name if you want
+                    album: 'AudioStellar Playlist',
+                    artwork: [
+                         // Use a default thumbnail or the one from YouTube API
+                        { src: current.thumbnail || '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+                        { src: current.thumbnail || '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+                    ]
+                });
+
+                // Update playback state
+                navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+            }
+        }
+
+        // --- End Media Session API Implementation ---
+
         // Auto-load saved playlist
         window.onload = async function() {
+            setupMediaSession(); // Initialize Media Session handlers
             const lastUrl = localStorage.getItem('lastPlaylistUrl');
             if (lastUrl) {
                 document.getElementById('playlistUrl').value = lastUrl;
                 await loadPlaylist();
-        
+            
                 const lastIndex = localStorage.getItem('lastPlaylistIndex');
                 if (lastIndex !== null && playlist.length > 0) {
                     loadVideo(parseInt(lastIndex));
@@ -317,12 +370,18 @@
                         wakeLock = await navigator.wakeLock.request('screen');
                     }
                 } catch (err) {
-                    console.log('Wake lock not supported');
+                    console.log('Wake lock not supported or denied:', err);
                 }
             }
             
             // Request wake lock when playing
-            document.addEventListener('play', requestWakeLock);
+            // Note: This 'play' event on the document is a generic DOM event,
+            // not directly tied to the YouTube player's internal state.
+            // It's better to request/release wake lock based on the player's
+            // actual playing state change, which is handled in onPlayerStateChange.
+            // For robust behavior, you might call requestWakeLock when player.playVideo() is called
+            // and release it when player.pauseVideo() or player.stopVideo() is called.
+            // For now, let's rely on the Media Session API to manage background audio.
         }
     </script>
     
